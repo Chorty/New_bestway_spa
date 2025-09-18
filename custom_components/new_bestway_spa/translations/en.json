@@ -7,12 +7,25 @@
         "description": "Enter your API credentials to connect your Bestway Smart Spa.",
         "data": {
           "device_name": "Device Name",
-          "token": "API Token",
           "device_id": "Device ID",
           "product_id": "Product ID",
           "push_type": "Push Type (fcm or apns)",
-          "client_id": "Client ID (optional)",
-          "registration_id": "Registration ID"
+          "client_id": "Client ID (required for fcm)",
+          "registration_id": "Registration ID",
+          "visitor_id": "Visitor ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate Bestway Spa",
+        "description": "Update your API credentials to continue using your Bestway Smart Spa.",
+        "data": {
+          "device_name": "Device Name",
+          "device_id": "Device ID",
+          "product_id": "Product ID",
+          "push_type": "Push Type (fcm or apns)",
+          "client_id": "Client ID (required for fcm)",
+          "registration_id": "Registration ID",
+          "visitor_id": "Visitor ID"
         }
       }
     },
@@ -22,7 +35,8 @@
       "unknown": "Unknown error"
     },
     "abort": {
-      "already_configured": "This spa is already configured."
+      "already_configured": "This spa is already configured.",
+      "reauth_successful": "Re-authentication was successful."
     }
   },
   "entity": {

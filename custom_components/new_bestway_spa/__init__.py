@@ -1,11 +1,16 @@
+from datetime import timedelta
+import logging
+
+from aiohttp import ClientError, ClientResponseError
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from datetime import timedelta
+
 from .const import DOMAIN
 from .spa_api import BestwaySpaAPI, authenticate
-import aiohttp
-import logging
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,18 +18,27 @@ PLATFORMS = ["switch", "number", "sensor", "climate", "select", "button"]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bestway Spa from a config entry."""
 
-    session = aiohttp.ClientSession()
+    session = async_get_clientsession(hass)
 
-    token = await authenticate(session, entry.data)
+    try:
+        token = await authenticate(session, entry.data)
+    except ClientResponseError as err:
+        if err.status == 401:
+            raise ConfigEntryAuthFailed("Invalid credentials") from err
+        raise ConfigEntryNotReady("Error communicating with Bestway Spa API") from err
+    except ClientError as err:
+        raise ConfigEntryNotReady("Error communicating with Bestway Spa API") from err
+
     if not token:
-        _LOGGER.error("Authentication failed: No token returned")
-        return False
+        raise ConfigEntryAuthFailed("Authentication failed: No token returned")
 
-    api = BestwaySpaAPI(session, {**entry.data, "token": token})
+    api = BestwaySpaAPI(session, entry.data, token)
 
     async def async_update_data():
         try:
             return await api.get_status()
+        except ConfigEntryAuthFailed:
+            raise
         except Exception as err:
             raise UpdateFailed(f"Error fetching spa data: {err}") from err
 
@@ -45,6 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = {
         "api": api,
         "coordinator": coordinator,
+        "credentials": dict(entry.data),
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
