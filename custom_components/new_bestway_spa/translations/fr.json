@@ -7,12 +7,25 @@
         "description": "Saisissez vos identifiants API pour connecter votre spa Bestway.",
         "data": {
           "device_name": "Nom du périphérique",
-          "token": "Jeton API",
           "device_id": "ID du périphérique",
           "product_id": "ID du produit",
           "push_type": "Type de push (fcm ou apns)",
-          "client_id": "Client ID (optionnel)",
-          "registration_id": "Registration ID"
+          "client_id": "Client ID (requis pour fcm)",
+          "registration_id": "Registration ID",
+          "visitor_id": "Visitor ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Réauthentifier le spa Bestway",
+        "description": "Mettez à jour vos identifiants API pour continuer à utiliser votre spa Bestway.",
+        "data": {
+          "device_name": "Nom du périphérique",
+          "device_id": "ID du périphérique",
+          "product_id": "ID du produit",
+          "push_type": "Type de push (fcm ou apns)",
+          "client_id": "Client ID (requis pour fcm)",
+          "registration_id": "Registration ID",
+          "visitor_id": "Visitor ID"
         }
       }
     },
@@ -22,7 +35,8 @@
       "unknown": "Erreur inconnue"
     },
     "abort": {
-      "already_configured": "Ce spa est déjà configuré."
+      "already_configured": "Ce spa est déjà configuré.",
+      "reauth_successful": "La réauthentification a réussi."
     }
   },
   "entity": {
