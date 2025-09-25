@@ -39,6 +39,7 @@ class BestwaySpaTargetTemperature(CoordinatorEntity, NumberEntity):
         return self.coordinator.data.get("temperature_setting")
 
     async def async_set_native_value(self, value: float):
-        await self._api.set_state("temperature_setting", value)
+        target_value = int(round(value))
+        await self._api.set_state("temperature_setting", target_value)
         await asyncio.sleep(2)
         await self.coordinator.async_request_refresh()

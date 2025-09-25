@@ -26,7 +26,27 @@ This Home Assistant integration allows you to control your Bestway SmartHub-enab
 
 ---
 
-## Step 1 – Setup Charles Proxy
+## Option A – Automated capture workflow
+
+If you prefer a scripted approach, use the toolkit in [`tools/traffic_capture/`](tools/traffic_capture/) to launch a pre-configured [mitmproxy](https://mitmproxy.org/) instance and capture traffic without touching the Charles UI. The short version:
+
+1. Run `docker compose up -d` inside `tools/traffic_capture/` (customise ports as required).
+2. Install the interception certificate from `http://mitm.it` on the capture phone.
+3. Configure the phone's Wi-Fi proxy to the machine running Docker.
+4. Complete the Bestway login/QR pairing flow — flows are saved under `tools/traffic_capture/data/` and can be exported as HAR from the mitmproxy UI.
+5. Feed the exported HAR (or a Charles `.chlsj` export) into [`tools/extract_credentials.py`](tools/extract_credentials.py) to pull out the Home Assistant credentials automatically:
+
+   ```bash
+   ./tools/extract_credentials.py tools/traffic_capture/data/session.har -o credentials.json
+   ```
+
+   The script prints the extracted identifiers and writes them to `credentials.json` for reuse in the config flow.
+
+The classic manual Charles Proxy workflow is still documented below if you do not wish to use Docker.
+
+## Option B – Manual capture with Charles Proxy
+
+### Step 1 – Setup Charles Proxy
 
 1. Launch **Charles Proxy** on your PC
 2. Go to `Proxy > Proxy Settings` and note the HTTP port (default: `8888`)
@@ -84,17 +104,16 @@ In Charles:
 
 ## Step 5 – Retrieve Credentials
 
-1. Look for a **POST** request to `/enduser/visitor`:
-   - [https://smarthub-eu.bestwaycorp.com](https://smarthub-eu.bestwaycorp.com)
-2. Open it and check **Request > JSON** or **Text**
+1. **Automated**: Run `./tools/extract_credentials.py <capture-file>` and copy the generated values into Home Assistant. The script flags the request path that produced each identifier so you can verify the result in your proxy export.
+2. **Manual**: Look for a **POST** request to `/enduser/visitor` on [https://smarthub-eu.bestwaycorp.com](https://smarthub-eu.bestwaycorp.com) and check **Request > JSON** or **Text**.
 
-### Useful credentials to extract:
+### Useful credentials to extract (manual method)
 - `visitor_id`
 - `client_id` (for Android)
 - `device_id`
 - `product_id`
 
-### Additional:
+### Additional (manual method)
 - `registration_id` and `client_id` can be found in `/api/enduser/visitor`
 - `device_id` and `product_id` may be in `/api/enduser/home/room/devices`
 
