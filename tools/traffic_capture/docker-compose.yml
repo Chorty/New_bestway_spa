@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  mitmproxy:
+    image: mitmproxy/mitmproxy:10.3.0
+    container_name: bestway_mitmproxy
+    command: >-
+      mitmweb
+      --mode regular
+      --web-host 0.0.0.0
+      --web-port ${MITMWEB_PORT:-8081}
+      --listen-host 0.0.0.0
+      --listen-port ${MITMPROXY_PORT:-8080}
+      --set block_global=false
+      --set connection_strategy=lazy
+      --set http2=false
+      --save-stream-file /data/session.mitm
+    ports:
+      - "${MITMPROXY_PORT:-8080}:${MITMPROXY_PORT:-8080}"
+      - "${MITMWEB_PORT:-8081}:8081"
+    volumes:
+      - ./data:/data
+    environment:
+      MITMPROXY_PORT: ${MITMPROXY_PORT:-8080}
+      MITMWEB_PORT: ${MITMWEB_PORT:-8081}
+    restart: unless-stopped
